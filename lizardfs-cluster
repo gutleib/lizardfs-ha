@@ -11,7 +11,7 @@
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-NAME=mfscluster
+NAME=lfscluster
 DESC=lizardfs-cluster
 DEFAULT_WORKING_USER=mfs
 DEFAULT_WORKING_GROUP=mfs
@@ -19,7 +19,6 @@ DEFAULT_DATA_PATH=/var/lib/mfs
 DEFAULT_RUN_PATH=/var/run/mfs
 DEFAULT_CFG=/etc/mfs/mfsmaster.cfg
 COMPAT_CFG=/etc/mfsmaster.cfg
-HOSTNAME="$(cat /etc/hostname)"
 
 test -e $DAEMON || exit 0
 
@@ -81,7 +80,7 @@ check_dirs()
         chown -R $WORKING_USER:$WORKING_GROUP "$DATA_PATH"
         if [ ! -e "$DATA_PATH"/metadata.mfs ]; then
                 if [ ! -e "$DATA_PATH"/metadata.mfs.back ]; then
-                        echo "MFSM NEW" > "$DATA_PATH"/metadata.mfs
+                        echo "LFSM NEW" > "$DATA_PATH"/metadata.mfs
                 fi
         fi
 
@@ -91,7 +90,6 @@ check_dirs()
         chmod 0755 "$RUN_PATH"
         chown -R $WORKING_USER:$WORKING_GROUP "$RUN_PATH"
 }
-
 check_status()
 {
         # check current personality
@@ -113,37 +111,24 @@ become_master()
         # Promote to master, making a backup of the config
         sed -i.bak '1s/shadow/master/' $DEFAULT_CFG
 
-        # Sleep 1 to please the master
-        sleep 1
-
-        # Test the new config and reload the master service
-        mfsmaster -c $DEFAULT_CFG && service lizardfs-master reload || echo FAIL
+        # Reload the master service
+        service lizardfs-master reload
 
         # Force corosync to move the failover-ip to this host
-        crm resource migrate failover-ip $HOSTNAME
+        crm resource migrate failover-ip $(hostname)
 
         # Remove the constraint that corosync just created
         crm resource unmigrate failover-ip
 
-        # Start WEB LFS service
-        service lizardfs-cgiserv start && service nginx start
-
         exit 0;
 }
-
 become_shadow()
 {
         # Demote to shadow, making a backup of the config
         sed -i.bak '1s/master/shadow/' $DEFAULT_CFG
 
-        # Sleep 1 to please the master
-        sleep 1
-
-        # Test the new config and reload the master service
-        mfsmaster -c $DEFAULT_CFG && service lizardfs-master reload || echo FAIL
-
-        # Stop WEB LFS service
-        service nginx stop && service lizardfs-cgiserv stop
+        # Reload the master service
+        service lizardfs-master restart
 
         exit 0;
 }
