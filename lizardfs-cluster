@@ -127,7 +127,7 @@ become_shadow()
         # Demote to shadow, making a backup of the config
         sed -i.bak '1s/master/shadow/' $DEFAULT_CFG
 
-        # Reload the master service
+        # Restart the master service
         service lizardfs-master restart
 
         exit 0;
