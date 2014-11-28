@@ -27,4 +27,5 @@ property $id="cib-bootstrap-options" \
 	last-lrm-refresh="1417167531" \
 	no-quorum-policy="ignore"
 rsc_defaults $id="rsc-options" \
-	resource-stickiness="100"
+	resource-stickiness="100" \
+	migration-threshold="3"
