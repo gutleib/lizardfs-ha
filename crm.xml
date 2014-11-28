@@ -1,0 +1,25 @@
+node lfs01 \
+attributes standby="off"
+node lfs02 \
+attributes standby="off"
+primitive failover-ip ocf:heartbeat:IPaddr2 \
+params ip="10.10.0.254" cidr_netmask="24" nic="eth1" \
+op monitor interval="2s"
+primitive failover-ip2 ocf:heartbeat:IPaddr2 \
+params ip="192.168.0.1" cidr_netmask="25" nic="eth0" \
+op monitor interval="2s"
+primitive lizardfs-cluster lsb:lizardfs-cluster \
+meta target-role="Started"
+primitive lizardfs-nat lsb:lizardfs-nat
+group LizardFSIPs failover-ip failover-ip2
+colocation col_lizardfs-cluster_failover-ip inf: LizardFSIPs lizardfs-cluster
+order ip-before-lizardfs inf: LizardFSIPs:start lizardfs-cluster:start lizardfs-nat:start
+property $id="cib-bootstrap-options" \
+dc-version="1.1.7-ee0730e13d124c3d58f00016c3376a1de5323cff" \
+cluster-infrastructure="openais" \
+expected-quorum-votes="2" \
+stonith-enabled="false" \
+last-lrm-refresh="1417167531" \
+no-quorum-policy="ignore"
+rsc_defaults $id="rsc-options" \
+resource-stickiness="100"
