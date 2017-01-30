@@ -13,11 +13,11 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=lfscluster
 DESC=lizardfs-cluster
-DEFAULT_WORKING_USER=mfs
-DEFAULT_WORKING_GROUP=mfs
-DEFAULT_DATA_PATH=/var/lib/mfs
-DEFAULT_RUN_PATH=/var/run/mfs
-DEFAULT_CFG=/etc/mfs/mfsmaster.cfg
+DEFAULT_WORKING_USER=lizardfs
+DEFAULT_WORKING_GROUP=lizardfs
+DEFAULT_DATA_PATH=/var/lib/lizardfs
+DEFAULT_RUN_PATH=/var/run
+DEFAULT_CFG=/etc/lizardfs/mfsmaster.cfg
 COMPAT_CFG=/etc/mfsmaster.cfg
 HOSTNAME="$(cat /etc/hostname)"
 
@@ -94,12 +94,12 @@ check_dirs()
 check_status()
 {
         # check current personality
-        if grep -q "PERSONALITY = master" "/etc/mfs/mfsmaster.cfg"
+        if grep -q "PERSONALITY = master" "/etc/lizardfs/mfsmaster.cfg"
         then
                 LFS_PERSONALITY=master
                 echo "Current personality is $LFS_PERSONALITY"
                 exit 0;
-        elif grep -q "PERSONALITY = shadow" "/etc/mfs/mfsmaster.cfg"
+        elif grep -q "PERSONALITY = shadow" "/etc/lizardfs/mfsmaster.cfg"
         then
                 LFS_PERSONALITY=shadow
                 echo "Current personality is $LFS_PERSONALITY"
@@ -111,8 +111,8 @@ become_master()
 {
         # Promote to master, making a backup of the config
         # sed -i.bak '1s/shadow/master/' $DEFAULT_CFG
-	    cp /etc/mfs/mfsmaster.cfg /etc/mfs/mfsmaster.cfg.bak
-	    cp /etc/mfs/mfsmaster.master.cfg /etc/mfs/mfsmaster.cfg
+	    cp /etc/lizardfs/mfsmaster.cfg /etc/lizardfs/mfsmaster.cfg.bak
+	    cp /etc/lizardfs/mfsmaster.master.cfg /etc/lizardfs/mfsmaster.cfg
 
         # Flush file system buffers
         # sync
@@ -132,8 +132,8 @@ become_shadow()
 {
         # Demote to shadow, making a backup of the config
         # sed -i.bak '1s/master/shadow/' $DEFAULT_CFG
-        cp /etc/mfs/mfsmaster.cfg /etc/mfs/mfsmaster.cfg.bak
-        cp /etc/mfs/mfsmaster.shadow.cfg /etc/mfs/mfsmaster.cfg
+        cp /etc/lizardfs/mfsmaster.cfg /etc/lizardfs/mfsmaster.cfg.bak
+        cp /etc/lizardfs/mfsmaster.shadow.cfg /etc/lizardfs/mfsmaster.cfg
 
         # Flush file system buffers
         # sync
